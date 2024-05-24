@@ -2,7 +2,7 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.utils.dates import days_ago
-import papermill as pm
+import subprocess
 
 # Define default arguments
 default_args = {
@@ -22,9 +22,10 @@ dag = DAG(
     schedule_interval='@daily',
 )
 
-# Function to run a notebook using Papermill
-def run_notebook(notebook_path, output_path):
-    pm.execute_notebook(notebook_path, output_path)
+# Function to run a notebook
+def run_notebook():
+    # Execute the notebook using nbconvert
+    subprocess.run(["jupyter", "nbconvert", "--to", "notebook", "--execute", "/Users/ronitguptaaa/Documents/MusicETL/Workflow.ipynb"])
 
 # Define tasks
 start = DummyOperator(task_id='start', dag=dag)
@@ -32,31 +33,8 @@ start = DummyOperator(task_id='start', dag=dag)
 run_first_notebook = PythonOperator(
     task_id='run_first_notebook',
     python_callable=run_notebook,
-    op_kwargs={
-        'notebook_path': '/Users/ronitguptaaa/Documents/MusicETL/Workflow.ipynb'
-    },
     dag=dag,
 )
-
-# run_second_notebook = PythonOperator(
-#     task_id='run_second_notebook',
-#     python_callable=run_notebook,
-#     op_kwargs={
-#         'notebook_path': '/path/to/your/second_notebook.ipynb',
-#         'output_path': '/path/to/your/output_second_notebook.ipynb'
-#     },
-#     dag=dag,
-# )
-
-# run_third_notebook = PythonOperator(
-#     task_id='run_third_notebook',
-#     python_callable=run_notebook,
-#     op_kwargs={
-#         'notebook_path': '/path/to/your/third_notebook.ipynb',
-#         'output_path': '/path/to/your/output_third_notebook.ipynb'
-#     },
-#     dag=dag,
-# )
 
 end = DummyOperator(task_id='end', dag=dag)
 
